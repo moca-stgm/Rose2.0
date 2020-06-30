@@ -18,18 +18,13 @@ from tg_bot.modules.helper_funcs.chat_status import is_user_admin
 from tg_bot.modules.helper_funcs.misc import paginate_modules
 
 PM_START_TEXT = """
-Hey! {}, my name is {}!I can help you out in mananging your group efficiency
-I can do what you cannot ! 
-I am more powerful & I have more features than any other bots.
-Just add me in an group & start using me !
-[I am very smart that's because I am created by this guy!](tg://user?id={})
-[Click Here To Add Me In Group!](http://t.me/AsunaYuuki_Robot?startgroup=true)
- if you have any questions about how to use me please give me /help 
- My support group @hackerhubz ! 
-Join My Bot Group @BotsExpertsHub
+Hlw {}, my name is *{}* ! 
+want any Help click - /help
 
-Thank you for using me!
+Want to,
+Manager Your Group [Click Here](http://t.me/SarikaRoBot?startgroup=true)
 
+Handcrafted by *Genius* 🇮🇳
 """
 
 HELP_STRINGS = """
@@ -48,11 +43,7 @@ Hello! my name *{}*.
 And the following:
 """.format(dispatcher.bot.first_name, "" if not ALLOW_EXCL else "\nAll of the following commands  / or ! can  be used...\n")
 
-DONATE_STRING = """Heya, glad to hear you want to donate!
-It took lots of work for [my main creator](t.me/mariodevs) to get me to where I am now, and every donation helps \
-motivate him to make me even better. All the donation money will go to a better VPS to host me, and/or beer \
-(see his bio!). He's just a poor student, so every little helps!
-There are two ways of paying him; [PayPal](paypal.me/PaulSonOfLars), or [Monzo](monzo.me/paulnionvestergaardlarsen)."""
+DONATE_STRING = """I Don't Want Donation!"""
 
 IMPORTED = {}
 MIGRATEABLE = []
@@ -120,31 +111,26 @@ def test(bot: Bot, update: Update):
 
 
 @run_async
-def start(bot: Bot, update: Update, args: List[str]):
-    if update.effective_chat.type == "private":
-        if len(args) >= 1:
-            if args[0].lower() == "help":
-                send_help(update.effective_chat.id, HELP_STRINGS)
+def send_start(bot, update):
+    # Try to remove old message
+    try:
+        query = update.callback_query
+        query.message.delete()
+    except:
+        pass
 
-            elif args[0].lower().startswith("stngs_"):
-                match = re.match("stngs_(.*)", args[0].lower())
-                chat = dispatcher.bot.getChat(match.group(1))
+    chat = update.effective_chat  # type: Optional[Chat]
+    first_name = update.effective_user.first_name
+    text = PM_START_TEXT
 
-                if is_user_admin(chat, update.effective_user.id):
-                    send_settings(match.group(1), update.effective_user.id, False)
-                else:
-                    send_settings(match.group(1), update.effective_user.id, True)
+    keyboard = [[InlineKeyboardButton(text="➕ Add me to a Group ➕", url="http://telegram.me/SarikaRoBot?startgroup=botstart")]]
+    keyboard += [[InlineKeyboardButton(text="🇮🇳 Language", callback_data="set_lang_"),
+                  InlineKeyboardButton(text="❔ Help", callback_data="help_back")]]
 
-            elif args[0][1:].isdigit() and "rules" in IMPORTED:
-                IMPORTED["rules"].send_rules(update, args[0], from_pm=True)
+    update.effective_message.reply_text(PM_START_TEXT.format(escape_markdown(first_name), bot.first_name),
+                                        reply_markup=InlineKeyboardMarkup(keyboard), disable_web_page_preview=True,
+                                        parse_mode=ParseMode.MARKDOWN)
 
-        else:
-            first_name = update.effective_user.first_name
-            update.effective_message.reply_text(
-                PM_START_TEXT.format(escape_markdown(first_name), escape_markdown(bot.first_name), OWNER_ID),
-                parse_mode=ParseMode.MARKDOWN)
-    else:
-        update.effective_message.reply_text("Thank you for coffee ☕I am refreshed now!")
 
 
 # for test purposes
